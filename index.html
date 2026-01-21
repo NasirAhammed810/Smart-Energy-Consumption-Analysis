@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Energy Forecasting</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<h1>Smart Energy Forecasting System</h1>
+
+<!-- Backend → Frontend data -->
+<script>
+    window.recent_data = {{ recent_data | tojson | safe }};
+</script>
+
+<!-- Device selection -->
+<label>Device:</label>
+<select id="device">
+  {% for d in devices %}
+    <option value="{{ d }}">{{ d }}</option>
+  {% endfor %}
+</select>
+
+<br><br>
+
+<!-- Horizon selection -->
+<label>Prediction Horizon:</label>
+<select id="horizon">
+  <option value="hour">Next Hour</option>
+  <option value="week">Next Week</option>
+  <option value="month">Next Month</option>
+</select>
+
+<br><br>
+
+<!-- Predict button -->
+<button id="predictBtn">Predict</button>
+
+<hr>
+
+<h3>Prediction Result</h3>
+<pre id="output">Waiting for prediction...</pre>
+
+<h3>Smart Suggestion</h3>
+<p id="tip">—</p>
+
+<!-- JS loaded ONCE at bottom -->
+<script src="/static/script.js"></script>
+
+</body>
+</html>
