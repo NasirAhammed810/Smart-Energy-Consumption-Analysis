@@ -1,7 +1,7 @@
 # Smart-Energy-Consumption-Analysis
 🏡 Smart Energy Forecasting System using Machine Learning
-📌 Project Overview
-
+**📌 Project Overview
+**
 The Smart Energy Forecasting System is an end-to-end Machine Learning–based web application that predicts future household energy consumption using historical smart home data. The system leverages time-series modeling (LSTM) to forecast energy usage for the next hour, week, or month and provides device-wise energy estimates along with smart energy-saving suggestions.
 
 This project integrates:
@@ -20,7 +20,7 @@ Interactive web interface
 
 Visualization dashboards
 
-🎯 Objectives
+**🎯 Objectives**
 
 Predict future energy consumption accurately using historical data
 
@@ -115,8 +115,8 @@ Pressure
 Total Energy Consumption (Target)
 
 🏗️ Project Modules Summary
-Module 1: Data Understanding & Preprocessing
-
+**Module 1: Data Understanding & Preprocessing
+**
 Data cleaning
 
 Timestamp parsing
@@ -125,7 +125,7 @@ Handling missing values
 
 Feature scaling using MinMaxScaler
 
-Module 2: Exploratory Data Analysis
+**Module 2: Exploratory Data Analysis**
 
 Trend analysis
 
@@ -133,13 +133,13 @@ Device-wise energy usage patterns
 
 Correlation analysis
 
-Module 3: Baseline Model
+**Module 3: Baseline Model**
 
 Linear Regression model
 
 Performance evaluation using MAE, RMSE, R²
-
-Module 4: LSTM Model Development
+**
+Module 4: LSTM Model Development**
 
 Time-series sequence creation
 
@@ -147,21 +147,21 @@ LSTM architecture design
 
 Training and validation
 
-Module 5: Hyperparameter Tuning
+**Module 5: Hyperparameter Tuning**
 
 Tuning time steps, units, epochs
 
 Selecting best-performing model
-
+**
 Module 6: Model Evaluation & Integration
-
+**
 Comparison between baseline and LSTM
 
 Model persistence (.h5, .pkl)
 
 Flask-compatible prediction function
 
-Module 7: Dashboard & Visualization
+**Module 7: Dashboard & Visualization**
 
 Hourly, daily, weekly, monthly consumption plots
 
@@ -169,7 +169,7 @@ Device-wise energy usage charts
 
 Smart energy-saving suggestions
 
-Module 8: Web Application Deployment
+**Module 8: Web Application Deployment**
 
 Flask API for predictions
 
@@ -199,7 +199,7 @@ Device-wise Energy (kWh)
 
 Smart Energy Saving Tip
 
-🌐 Web Application Features
+**🌐 Web Application Features**
 
 Interactive UI
 
@@ -213,7 +213,7 @@ Smart energy efficiency tips
 
 Backend powered by Flask API
 
-🚀 How to Run the Project
+**🚀 How to Run the Project**
 1️⃣ Install Dependencies
 pip install -r requirements.txt
 
@@ -241,7 +241,7 @@ R² Score
 
 The tuned LSTM model significantly outperformed the baseline regression model.
 
-📌 Future Enhancements
+**📌 Future Enhancements**
 
 Real-time IoT sensor integration
 
