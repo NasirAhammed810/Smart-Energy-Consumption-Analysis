@@ -1,7 +1,7 @@
 # Smart-Energy-Consumption-Analysis
 🏡 Smart Energy Forecasting System using Machine Learning
-**📌 Project Overview
-**
+**📌 Project Overview**
+
 The Smart Energy Forecasting System is an end-to-end Machine Learning–based web application that predicts future household energy consumption using historical smart home data. The system leverages time-series modeling (LSTM) to forecast energy usage for the next hour, week, or month and provides device-wise energy estimates along with smart energy-saving suggestions.
 
 This project integrates:
@@ -253,7 +253,7 @@ Mobile-friendly UI
 
 Advanced forecasting (seasonal trends)
 
-👨‍💻 Author
+**👨‍💻 Author**
 
 Shaik Nasir Ahammed
 Computer Science Engineering
