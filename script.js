@@ -1,108 +1,187 @@
-// ===============================
-// Wait until HTML is fully loaded
-// ===============================
-document.addEventListener("DOMContentLoaded", function () {
-    const btn = document.getElementById("predictBtn");
+let energyChart = null;
+let deviceChart = null;
 
-    if (btn) {
-        btn.addEventListener("click", predict);
-        console.log("Predict button connected");
-    } else {
-        console.error("Predict button NOT found (check id='predictBtn')");
-    }
-});
+(function () {
+    'use strict';
 
-// ===============================
-// Predict function
-// ===============================
-function predict() {
-    const output = document.getElementById("output");
+    const deviceSelect = document.getElementById('device-select');
+    const horizonSelect = document.getElementById('horizon-select');
+    const predictBtn = document.getElementById('predict-btn');
+    const loadingIndicator = document.getElementById('loading');
+    const errorMessage = document.getElementById('error-message');
+    const resultsContainer = document.getElementById('results-container');
+    const totalEnergyEl = document.getElementById('total-energy');
+    const deviceEnergyEl = document.getElementById('device-energy');
+    const energyTipEl = document.getElementById('energy-tip');
+    const rawResponseEl = document.getElementById('raw-response');
 
-    if (!output) {
-        console.error("Output element not found (id='output')");
-        return;
+    const API_ENDPOINT = '/predict';
+
+    function showElement(el) {
+        if (el) el.classList.remove('hidden');
     }
 
-    output.innerText = "Predicting...";
-
-    // -------------------------------
-    // Check recent data from backend
-    // -------------------------------
-    if (!window.recent_data) {
-        output.innerText = "Recent data not loaded from backend.";
-        console.error("window.recent_data is undefined");
-        return;
+    function hideElement(el) {
+        if (el) el.classList.add('hidden');
     }
 
-    if (window.recent_data.length !== 14) {
-        output.innerText = "Recent data length is not 14.";
-        console.error("recent_data length:", window.recent_data.length);
-        return;
+    function displayError(msg) {
+        hideElement(loadingIndicator);
+        hideElement(resultsContainer);
+        errorMessage.textContent = msg;
+        showElement(errorMessage);
     }
 
-    // -------------------------------
-    // Read user selections
-    // -------------------------------
-    const deviceEl = document.getElementById("device");
-    const horizonEl = document.getElementById("horizon");
-
-    if (!deviceEl || !horizonEl) {
-        output.innerText = "Device or Horizon selector missing.";
-        console.error("device or horizon element missing");
-        return;
+    function clearError() {
+        hideElement(errorMessage);
+        errorMessage.textContent = '';
     }
 
-    const device = deviceEl.value;
-    const horizon = horizonEl.value;
+    function formatEnergy(v) {
+        return (typeof v === 'number' && !isNaN(v))
+            ? v.toFixed(2) + ' kWh'
+            : '-- kWh';
+    }
 
-    // -------------------------------
-    // Ensure features are numeric
-    // -------------------------------
-    const features = window.recent_data.map(row =>
-        row.map(v => Number(v))
-    );
-
-    // -------------------------------
-    // Send request to Flask backend
-    // -------------------------------
-    fetch("/predict", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            device: device,
-            horizon: horizon,
-            features: features
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            output.innerText = "Error: " + data.error;
-            console.error("Backend error:", data.error);
-            return;
+    function validateInputs() {
+        if (!deviceSelect.value) {
+            displayError('Please select a device.');
+            return null;
         }
-
-        // -------------------------------
-        // Display results (MATCHES app.py)
-        // -------------------------------
-        if (!data.total_predictions || !data.device_predictions) {
-        output.innerText = "Invalid response from backend.";
-        console.error("Invalid response:", data);
-        return;
+        if (!horizonSelect.value) {
+            displayError('Please select a prediction horizon.');
+            return null;
+        }
+        if (!window.recent_data) {
+            displayError('Recent data not available. Refresh page.');
+            return null;
+        }
+        return {
+            device: deviceSelect.value,
+            horizon: horizonSelect.value
+        };
     }
 
-    output.innerText =
-        "Total Energy Prediction (kWh):\n" +
-        data.total_predictions.join(", ") + "\n\n" +
-        device + " Energy Prediction (kWh):\n" +
-        data.device_predictions.join(", ") + "\n\n" +
-        "Smart Tip:\n" +
-        data.tip;
-        })
-    .catch(err => {
-        console.error("Fetch failed:", err);
-        output.innerText = "Request failed. Check console.";
-    });
-}
+    async function makePrediction(device, horizon) {
+        try {
+            const res = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    device,
+                    horizon,
+                    features: window.recent_data
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Server error');
+            }
+
+            const data = await res.json();
+            displayResults(data);
+
+        } catch (e) {
+            console.error(e);
+            displayError(e.message);
+        }
+    }
+
+    function displayResults(data) {
+        hideElement(loadingIndicator);
+        clearError();
+
+        totalEnergyEl.textContent = formatEnergy(data.total_energy_kwh);
+        deviceEnergyEl.textContent = formatEnergy(data.device_energy_kwh);
+        energyTipEl.textContent = data.tip || '--';
+        rawResponseEl.textContent = JSON.stringify(data, null, 2);
+        showElement(resultsContainer);
+
+        /* -------- DEVICE TIME-SERIES CHART -------- */
+        const ctx1 = document.getElementById("energyChart").getContext("2d");
+
+        if (energyChart) energyChart.destroy();
+
+        const ratio = data.total_energy_kwh > 0
+            ? data.device_energy_kwh / data.total_energy_kwh
+            : 0;
+
+        const deviceSeries = data.values.map(v => +(v * ratio).toFixed(3));
+
+        energyChart = new Chart(ctx1, {
+            type: "bar",
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: "Device Energy (kWh)",
+                    data: deviceSeries,
+                    backgroundColor: "#16a34a"
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        /* -------- MULTI DEVICE COMPARISON CHART -------- */
+        if (!data.device_comparison) return;
+
+        const ctx2 = document
+            .getElementById("deviceComparisonChart")
+            .getContext("2d");
+
+        if (deviceChart) deviceChart.destroy();
+
+        const labels = Object.keys(data.device_comparison)
+            .map(d => d.replaceAll("_", " ").toUpperCase());
+
+        const values = Object.values(data.device_comparison);
+
+        deviceChart = new Chart(ctx2, {
+            type: "bar",
+            data: {
+                labels,
+                datasets: [{
+                    label: "Energy (kWh)",
+                    data: values,
+                    backgroundColor: [
+                        "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed"
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function handlePredictClick() {
+        clearError();
+        hideElement(resultsContainer);
+
+        const inputs = validateInputs();
+        if (!inputs) return;
+
+        showElement(loadingIndicator);
+        predictBtn.disabled = true;
+
+        makePrediction(inputs.device, inputs.horizon)
+            .finally(() => {
+                predictBtn.disabled = false;
+                hideElement(loadingIndicator);
+            });
+    }
+
+    function init() {
+        predictBtn?.addEventListener('click', handlePredictClick);
+        console.log("Dashboard initialized");
+    }
+
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', init)
+        : init();
+})();

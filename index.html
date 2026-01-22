@@ -1,52 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Smart Energy Forecasting</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Forecasting System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
+    <div class="container">
+        <header class="header">
+            <h1>Smart Energy Forecasting System</h1>
+            <p class="subtitle">
+                Machine Learning-Based Energy Consumption Analysis with Device-Level Insights
+            </p>
+        </header>
 
-<h1>Smart Energy Forecasting System</h1>
+        <main class="dashboard">
+            <!-- ================= Controls ================= -->
+            <section class="controls-section">
+                <h2>Prediction Parameters</h2>
 
-<!-- Backend → Frontend data -->
-<script>
-    window.recent_data = {{ recent_data | tojson | safe }};
-</script>
+                <div class="form-group">
+                    <label for="device-select">Select Device:</label>
+                    <select id="device-select">
+                        <option value="">-- Choose a device --</option>
+                        <option value="fridge">Fridge</option>
+                        <option value="wine_cellar">Wine Cellar</option>
+                        <option value="garage_door">Garage Door</option>
+                        <option value="microwave">Microwave</option>
+                        <option value="living_room_appliances">Living Room Appliances</option>
+                    </select>
+                </div>
 
-<!-- Device selection -->
-<label>Device:</label>
-<select id="device">
-  {% for d in devices %}
-    <option value="{{ d }}">{{ d }}</option>
-  {% endfor %}
-</select>
+                <div class="form-group">
+                    <label for="horizon-select">Prediction Horizon:</label>
+                    <select id="horizon-select">
+                        <option value="">-- Choose a horizon --</option>
+                        <option value="hour">Next Hour</option>
+                        <option value="week">Next Week</option>
+                        <option value="month">Next Month</option>
+                    </select>
+                </div>
 
-<br><br>
+                <button id="predict-btn" class="predict-button">Predict</button>
+            </section>
 
-<!-- Horizon selection -->
-<label>Prediction Horizon:</label>
-<select id="horizon">
-  <option value="hour">Next Hour</option>
-  <option value="week">Next Week</option>
-  <option value="month">Next Month</option>
-</select>
+            <!-- ================= Results ================= -->
+            <section class="results-section">
+                <h2>Prediction Results</h2>
 
-<br><br>
+                <div id="loading" class="loading hidden">
+                    <span>Processing prediction...</span>
+                </div>
 
-<!-- Predict button -->
-<button id="predictBtn">Predict</button>
+                <div id="error-message" class="error-message hidden"></div>
 
-<hr>
+                <div id="results-container" class="results-container hidden">
+                    <div class="result-card">
+                        <h3>Total Energy Consumption</h3>
+                        <p class="result-value" id="total-energy">-- kWh</p>
+                    </div>
 
-<h3>Prediction Result</h3>
-<pre id="output">Waiting for prediction...</pre>
+                    <div class="result-card">
+                        <h3>Device Energy Consumption</h3>
+                        <p class="result-value" id="device-energy">-- kWh</p>
+                    </div>
 
-<h3>Smart Suggestion</h3>
-<p id="tip">—</p>
+                    <div class="result-card tip-card">
+                        <h3>Energy-Saving Suggestion</h3>
+                        <p class="tip-text" id="energy-tip">--</p>
+                    </div>
+                </div>
 
-<!-- JS loaded ONCE at bottom -->
-<script src="/static/script.js"></script>
+                <!-- ✅ STEP 2: CHART CONTAINER (NEW ADDITION) -->
+                <div class="chart-container">
+                    <h3>Energy Consumption Forecast</h3>
+                    <canvas id="energyChart" width="400" height="200"></canvas>
+                </div>
+                <!-- ✅ MULTI-DEVICE COMPARISON CHART -->
+                <div class="chart-container">
+                    <h3>Device-wise Energy Comparison</h3>
+                    <canvas id="deviceComparisonChart" width="400" height="200"></canvas>
+                </div>
 
+
+                <details class="raw-response">
+                    <summary>View Raw Response</summary>
+                    <pre id="raw-response">No prediction made yet.</pre>
+                </details>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Smart Home Energy Analysis Project | Academic Internship 2024</p>
+        </footer>
+    </div>
+
+    <!-- Inject recent sensor data from Flask backend -->
+    <script>
+        window.recent_data = {{ recent_data | tojson | safe }};
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
